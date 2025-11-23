@@ -6,22 +6,21 @@ import io.minio.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class MinioService {
     private final MinioClient client;
-    private final String bucket = "convert";
 
     public MinioService() {
         this.client = MinioUtil.getClient();
-        createBucketIfNotExists();
+        createBucketIfNotExists("pdf");
+        createBucketIfNotExists("doc");
     }
 
-    // =======================
-    // CREATE BUCKET IF NOT EXISTS
-    // =======================
-    private void createBucketIfNotExists() {
+
+    private void createBucketIfNotExists(String bucket) {
         try {
             boolean exists = client.bucketExists(
                     BucketExistsArgs.builder()
@@ -43,64 +42,50 @@ public class MinioService {
         }
     }
 
-    // =======================
-    // UPLOAD FILE
-    // =======================
-    public String upload(File file) throws Exception {
 
-        client.putObject(
+    public void upload(String bucket, String objectName, InputStream is, long size, String contentType) throws Exception {
+        MinioUtil.getClient().putObject(
                 PutObjectArgs.builder()
                         .bucket(bucket)
-                        .object(file.getName())
-                        .stream(new FileInputStream(file), file.length(), -1)
-                        .contentType("application/octet-stream")
+                        .object(objectName)
+                        .stream(is, size, -1)
+                        .contentType(contentType)
                         .build()
         );
-
-        return file.getName();
     }
 
-    // =======================
-    // DOWNLOAD TO TEMP FILE
-    // =======================
-    public File download(String fileName) throws Exception {
 
-        InputStream stream = client.getObject(
+    public File download(String bucket, String objectName) throws Exception {
+
+        File tempFile = File.createTempFile("minio-download-", ".tmp");
+        try (InputStream in = client.getObject(
                 GetObjectArgs.builder()
                         .bucket(bucket)
-                        .object(fileName)
+                        .object(objectName)
                         .build()
-        );
-
-        File tmp = new File(System.getProperty("java.io.tmpdir"), fileName);
-
-        java.nio.file.Files.copy(stream, tmp.toPath(), REPLACE_EXISTING);
-
-        stream.close();
-        return tmp;
+        )) {
+            Files.copy(in, tempFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        return tempFile;
     }
 
-    // =======================
-    // DELETE FILE
-    // =======================
-    public void delete(String fileName) throws Exception {
+
+    public void delete(String bucket, String objectName) throws Exception {
         client.removeObject(
                 RemoveObjectArgs.builder()
                         .bucket(bucket)
-                        .object(fileName)
+                        .object(objectName)
                         .build()
         );
     }
 
-    // =======================
-    // CHECK EXISTS
-    // =======================
-    public boolean exists(String fileName) {
+
+    public boolean exists(String bucket, String objectName) {
         try {
             client.statObject(
                     StatObjectArgs.builder()
                             .bucket(bucket)
-                            .object(fileName)
+                            .object(objectName)
                             .build()
             );
             return true;

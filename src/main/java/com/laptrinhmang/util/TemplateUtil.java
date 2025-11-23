@@ -52,6 +52,9 @@ public class TemplateUtil {
         private static JedisPool pool;
         private static final String HOST = "localhost";
         private static final int PORT = 6379;
+        private static final String QUEUE_NAME = "task_queue";
+        private static final String CHANNEL_NAME = "task_channel";
+
         static {
             try {
                 JedisPoolConfig config = new JedisPoolConfig();
@@ -65,7 +68,12 @@ public class TemplateUtil {
                 System.err.println("Cannot initialize JedisPool: " + e.getMessage());
             }
         }
-
+        public static String getChannelName() {
+            return CHANNEL_NAME;
+        }
+        public static String getQueueName() {
+            return QUEUE_NAME;
+        }
         public static JedisPool getPool() {
             return pool;
         }

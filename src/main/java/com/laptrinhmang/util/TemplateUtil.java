@@ -36,15 +36,15 @@ public class TemplateUtil {
         private static final String ACCESS_KEY = "minioadmin";
         private static final String SECRET_KEY = "minioadmin";
 
-        static {
-            try {
-                client = new MinioClient.Builder().endpoint(ENDPOINT).credentials(ACCESS_KEY, SECRET_KEY).build();
-            } catch (Exception e) {
-                System.err.println("Cannot initialize MinIO client: " + e.getMessage());
-            }
-        }
+
 
         public static MinioClient getClient() {
+            if (client == null) {
+                client = MinioClient.builder()
+                        .endpoint(ENDPOINT)
+                        .credentials(ACCESS_KEY, SECRET_KEY)
+                        .build();
+            }
             return client;
         }
     }

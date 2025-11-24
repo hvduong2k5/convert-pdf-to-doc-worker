@@ -14,6 +14,7 @@ import com.spire.pdf.FileFormat;
 import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,8 +30,13 @@ public class App {
         RedisService redisService = new RedisService();
         while (Thread.currentThread().isAlive()) {
             try {
-
-                FileEntity fileEntity = redisService.pop(RedisUtil.getQueueName());
+                FileEntity fileEntity = null;
+                try {
+                     fileEntity = redisService.pop();
+                }catch(Exception e ){
+                    System.out.println("lỗi khi pop queue");
+                    continue;
+                }
                 System.out.println(new Gson().toJson(fileEntity));
                 if (fileEntity != null) {
                     executorService.submit(new TaskExecutor(fileEntity));

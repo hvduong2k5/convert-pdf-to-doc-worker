@@ -19,11 +19,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>org.docx4j</groupId>
-            <artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
-            <version>11.4.7</version>
-        </dependency>
 
         <!-- Spire PDF TÁCH PDF / convert PDF → DOCX -->
         <dependency>

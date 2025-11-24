@@ -7,22 +7,29 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
 public class RedisService {
-    public FileEntity pop(String key) {
+    public FileEntity pop() {
         try (Jedis jedis = RedisUtil.getPool().getResource()) {
             String json = jedis.brpop(0, RedisUtil.getQueueName()).get(1);
             return new Gson().fromJson(json, FileEntity.class);
+        } catch (Exception e) {
+            System.err.println("Pop error with : "+e.getMessage());
+            return null;
         }
     }
     public void push(FileEntity fileEntity) {
         try (Jedis jedis = RedisUtil.getPool().getResource()) {
             String json = new Gson().toJson(fileEntity);
             jedis.lpush(RedisUtil.getQueueName(), json);
+        } catch (Exception e) {
+            System.err.println("push error with :"+e.getMessage());
         }
     }
     public void cacheSet(String key, FileEntity value) {
         try (Jedis jedis = RedisUtil.getPool().getResource()) {
             String json = new Gson().toJson(value);
             jedis.set(key, json);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -30,6 +37,8 @@ public class RedisService {
         try (Jedis jedis = RedisUtil.getPool().getResource()) {
             String json = new Gson().toJson(value);
             jedis.setex(key, expireSeconds, json);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -37,12 +46,17 @@ public class RedisService {
         try (Jedis jedis = RedisUtil.getPool().getResource()) {
             String json = jedis.get(key);
             return new Gson().fromJson(json, FileEntity.class);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
     public void cacheDelete(String key) {
         try (Jedis jedis = RedisUtil.getPool().getResource()) {
             jedis.del(key);
+        }catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -50,6 +64,8 @@ public class RedisService {
         try (Jedis jedis = RedisUtil.getPool().getResource()) {
             String json = new Gson().toJson(message);
             jedis.publish(channel, json);
+        }catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -58,6 +74,8 @@ public class RedisService {
         new Thread(() -> {
             try (Jedis jedis = RedisUtil.getPool().getResource()) {
                 jedis.subscribe(listener, channels);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }).start();
     }

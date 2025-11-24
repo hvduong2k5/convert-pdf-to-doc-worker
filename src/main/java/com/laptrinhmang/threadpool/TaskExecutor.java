@@ -9,9 +9,6 @@ import com.laptrinhmang.service.MinioService;
 import com.laptrinhmang.service.RedisService;
 import com.laptrinhmang.bean.Status;
 import com.laptrinhmang.util.RedisUtil;
-import org.checkerframework.checker.units.qual.C;
-import org.docx4j.openpackaging.contenttype.ContentType;
-import org.docx4j.wml.P;
 
 import java.io.File;
 import java.io.FileInputStream;
